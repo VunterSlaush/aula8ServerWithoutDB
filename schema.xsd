@@ -1,0 +1,378 @@
+<?xml version="1.0"?>
+
+<!----  ESQUEMA GENERAL --->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xs:element name="MEDIASTORE">
+    	<xs:complexType>
+			<xs:sequence>
+				<xs:element name="Products" type="type_products"/>
+				<xs:element name="Users" type="type_users"/>
+				<xs:element name="Movies" type="type_movies"/>
+				<xs:element name="Books" type="type_books"/>
+				<xs:element name="PucharseOrders" type="type_pucharseorders"/>
+				<xs:element name="Cars" type="type_cars"/>
+				<xs:element name="Cards" type="type_cards"/>
+				<xs:element name="Genres" type="type_genres"/>
+				<xs:element name="Languages" type="type_languages"/>
+				<xs:element name="DeliveryAddresses" type="type_deliveryaddresses"/>	
+				<xs:element name="Movie_credits" type="type_moviecredits"/>
+				<xs:element name="car_products" type="type_car_products"/>
+				<xs:element name="language_products" type="type_language_products"/>
+				<xs:element name="genre_products" type="type_genre_products"/>						
+			</xs:sequence>    		
+    	</xs:complexType>
+    </xs:element>
+</xs:schema>
+
+<!----  ESQUEMAS  --->
+<xs:complexType name= "type_products">
+	<xs:sequence>
+		<xs:element name="product" type="type_product" 
+			minOccurs="0" maxOccurs="unbounded"/>
+	</xs:sequence> 
+</xs:complexType>
+
+<xs:complexType name= "type_users">
+	<xs:sequence>
+		<xs:element name="user" type="type_user" 
+			minOccurs="0" maxOccurs="unbounded"/>
+	</xs:sequence>
+</xs:complexType>
+
+
+<xs:complexType name= "type_movies">
+	<xs:sequence>
+		<xs:element name="movie" type="type_movie" 
+			minOccurs="0" maxOccurs="unbounded"/>
+	</xs:sequence>
+</xs:complexType>
+
+
+<xs:complexType name= "type_books">
+	<xs:sequence>
+		<xs:element name="book" type="type_book" 
+			minOccurs="0" maxOccurs="unbounded"/>
+	</xs:sequence>
+</xs:complexType>
+
+
+<xs:complexType name= "type_pucharseorders">
+	<xs:sequence>
+		<xs:element name="pucharseorder" type="type_pucharseorder" 
+			minOccurs="0" maxOccurs="unbounded"/>
+	</xs:sequence>
+</xs:complexType>
+
+
+<xs:complexType name= "type_cars">
+	<xs:sequence>
+		<xs:element name="car" type="type_car" 
+			minOccurs="0" maxOccurs="unbounded"/>
+	</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name= "type_cards">
+	<xs:sequence>
+		<xs:element name="card" type="type_card" 
+			minOccurs="0" maxOccurs="unbounded"/>
+	</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name= "type_languages">
+	<xs:sequence>
+		<xs:element name="language" type="type_language" 
+			minOccurs="0" maxOccurs="unbounded"/>
+	</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name= "type_genres">
+	<xs:sequence>
+		<xs:element name="genre" type="type_genre" 
+			minOccurs="0" maxOccurs="unbounded"/>
+	</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name= "type_deliveryaddresses">
+	<xs:sequence>
+		<xs:element name="deliveryaddress" type="type_deliveryaddress" 
+			minOccurs="0" maxOccurs="unbounded"/>
+	</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name= "type_moviecredits">
+	<xs:sequence>
+		<xs:element name="moviecredit" type="type_moviecredit" 
+			minOccurs="0" maxOccurs="unbounded"/>
+	</xs:sequence>
+</xs:complexType>
+
+
+<xs:complexType name= "type_car_products">
+	<xs:sequence>
+		<xs:element name="car_product" type="type_car_product" 
+			minOccurs="0" maxOccurs="unbounded"/>
+	</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name= "type_language_products">
+	<xs:sequence>
+		<xs:element name="language_product" type="type_language_product" 
+			minOccurs="0" maxOccurs="unbounded"/>
+	</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name= "type_genre_products">
+	<xs:sequence>
+		<xs:element name="genre_product" type="type_genre_product" 
+			minOccurs="0" maxOccurs="unbounded"/>
+	</xs:sequence>
+</xs:complexType>
+
+
+
+
+
+<xs:complexType name= "type_product">
+	<xs:sequence>
+		<xs:element name="title" type="xs:string">
+		<xs:element name="type" type="product_domain">
+		<xs:element name="year" type="xs:int">
+		<xs:element name="release_date" type="xs:date">
+		<xs:element name="sinopsis" type="xs:string">
+		<xs:element name="rated" type="product_rated_domain">
+		<xs:element name="current_price" type="xs:float">
+		<xs:element name="inventory" type="xs:int">
+		<xs:element name="digital_avaliable" type="xs:boolean">
+		<xs:element name="rating" type="xs:float">
+		<xs:element name="votes" type="xs:int">
+	</xs:sequence>
+	<xs:atributte name="id_product" type="xs:ID" use="required">
+</xs:complexType>
+
+<xs:simpleType name="product_domain">
+	<xs:restriction base="xs:string">
+		<xs:enumeration value="book">
+		<xs:enumeration value="movie">
+	</xs:restriction>	
+</xs:simpleType>
+
+<xs:simpleType name="product_rated_domain">
+	<xs:restriction base="xs:string">
+		<xs:enumeration value="PG">
+		<xs:enumeration value="plus12">
+		<xs:enumeration value="plus14">
+		<xs:enumeration value="plus18">
+	</xs:restriction>	
+</xs:simpleType>
+
+<xs:complexType name= "type_movie">
+	<xs:complexContent>
+		<xs:extension base="type_product">
+		<xs:sequence>
+			<xs:element name="budget" type="xs:int">
+			<xs:element name="lenght" type="xs:int">
+			<xs:element name="imdb_id" type="xs:string">
+			<xs:element name="imdb_rating" type="xs:float">
+			<xs:element name="imdb_poster_url" type="xs:string">
+		</xs:sequence>
+	</xs:complexContent>
+</xs:complexType>
+
+
+<xs:complexType name= "type_book">
+	<xs:complexContent>
+		<xs:extension base="type_product">
+		<xs:sequence>
+			<xs:element name="author" type="xs:string">
+			<xs:element name="publisher" type="xs:string">
+		</xs:sequence>
+	</xs:complexContent>
+</xs:complexType>
+
+<xs:complexType name= "type_genre">
+	<xs:sequence>
+		<xs:element name="name" type="xs:string">
+		<xs:element name="type" type="product_domain">
+	</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name= "type_language">
+	<xs:sequence>
+		<xs:element name="name" type="xs:string">
+		<xs:element name="locale" type="xs:string">
+		<xs:element name="country" type="xs:string">
+	</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name= "type_user">
+	<xs:sequence>
+		<xs:element name="email" type="xs:string">
+		<xs:element name="name" type="xs:string">
+		<xs:element name="birth_date" type="xs:date">
+		<xs:element name="password" type="xs:string">
+		<xs:element name="secret_question" type="xs:string">
+		<xs:element name="secret_answer" type="xs:string">
+		<xs:element name="address" type="xs:string">
+		<xs:element name="cellphone" type="xs:string">
+		<xs:element name="telephone" type="xs:string">
+		<xs:element name="sex" type="xs:string">
+	</xs:sequence>
+	<xs:atributte name="id_user" type="xs:ID" use="required">
+</xs:complexType>
+
+<xs:complexType name= "type_car">
+	<xs:sequence>
+		<xsd:element name="user">
+			<xsd:complexType>
+				<xsd:attribute name="idref" type="xs:IDREF" 
+			             use="required"/>
+			</xsd:complexType>
+		</xsd:element>
+	</xs:sequence>
+	<xs:atributte name="id_car" type="xs:ID" use="required">
+</xs:complexType>
+
+
+<xs:complexType name= "type_deliveryaddres">
+	<xs:sequence>
+		<xs:element name="street" type="xs:string">
+		<xs:element name="city" type="xs:string">
+		<xs:element name="state" type="xs:string">
+		<xs:element name="country" type="xs:string">
+		<xs:element name="postal_code" type="xs:int">
+		<xs:element name="contact_name" type="xs:string">
+		<xs:element name="contact_phone" type="xs:string">
+		<xs:element name="user">
+			<xs:complexType>
+				<xs:attribute name="idref" type="xs:IDREF" 
+			             use="required"/>
+			</xs:complexType>
+		</xs:element>
+	</xs:sequence>
+	<xs:atributte name="id_deliveryaddres" type="xs:ID" use="required">
+</xs:complexType>
+
+<xs:complexType name= "type_card">
+	<xs:sequence>
+		<xs:element name="number" type="xs:int">
+		<xs:element name="type" type="card_type">
+		<xs:element name="expire_date" type="xs:date">
+		<xs:element name="name_on_card" type="xs:string">
+		<xs:element name="ccv" type="xs:int">
+		<xs:element name="address_bill" type="xs:string">
+		<xs:element name="brand" type="brand_card">
+		<xsd:element name="user">
+			<xsd:complexType>
+				<xsd:attribute name="idref" type="xs:IDREF" 
+			             use="required"/>
+			</xsd:complexType>
+		</xsd:element>
+	</xs:sequence>
+	<xs:atributte name="id_card" type="xs:ID" use="required">
+</xs:complexType>
+
+<xs:simpleType name="brand_card">
+	<xs:restriction base="xs:string">
+		<xs:enumeration value="VISA">
+		<xs:enumeration value="MASTERCARD">
+		<xs:enumeration value="AMERICAN EXPRESS">
+	</xs:restriction>	
+</xs:simpleType>
+
+<xs:simpleType name="card_type">
+	<xs:restriction base="xs:string">
+		<xs:enumeration value="DEBIT">
+		<xs:enumeration value="CREDIT">
+	</xs:restriction>	
+</xs:simpleType>
+
+<xs:complexType name= "type_pucharseorder">
+	<xs:sequence>
+		<xs:element name="date" type="xs:date">
+		<xs:element name="delivery_state" type="delivery_state_domain">
+		<xsd:element name="user">
+			<xsd:complexType>
+				<xsd:attribute name="idref" type="xs:IDREF" 
+			             use="required"/>
+			</xsd:complexType>
+		</xsd:element>
+		<xsd:element name="car">
+			<xsd:complexType>
+				<xsd:attribute name="idref" type="xs:IDREF" 
+			             use="required"/>
+			</xsd:complexType>
+		</xsd:element>
+		<xsd:element name="card">
+			<xsd:complexType>
+				<xsd:attribute name="idref" type="xs:IDREF" 
+			             use="required"/>
+			</xsd:complexType>
+		</xsd:element>
+
+		<xsd:element name="deliveryaddress">
+			<xsd:complexType>
+				<xsd:attribute name="idref" type="xs:IDREF" 
+			             use="required"/>
+			</xsd:complexType>
+		</xsd:element>
+
+	</xs:sequence>
+	<xs:atributte name="id_pucharseorder" type="xs:ID" use="required">
+</xs:complexType>
+
+<xs:complexType name= "type_moviecredit">
+	<xs:sequence>
+		<xs:element name="role" type="xs:date">
+		<xs:element name="name" type="xs:string">
+		<xs:element name="movie">
+			<xs:complexType>
+				<xs:attribute name="idref" type="xs:IDREF" 
+			             use="required"/>
+			</xs:complexType>
+		</xs:element>
+	</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name= "type_language_product">
+	<xs:sequence>
+		<xs:element name="locale" type="xs:string">
+		<xs:element name="country" type="xs:string">
+		<xs:element name="product">
+			<xs:complexType>
+				<xs:attribute name="idref" type="xs:IDREF" 
+			             use="required"/>
+			</xs:complexType>
+		</xs:element>
+	</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name= "type_genre_product">
+	<xs:sequence>
+		<xs:element name="type" type="product_domain">
+		<xs:element name="name" type="xs:string">
+		<xs:element name="product">
+			<xs:complexType>
+				<xs:attribute name="idref" type="xs:IDREF" 
+			             use="required"/>
+			</xs:complexType>
+		</xs:element>
+	</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name= "type_car_product">
+	<xs:sequence>
+		<xs:element name="quantity" type="xs:int">
+		<xsd:element name="product">
+			<xsd:complexType>
+				<xsd:attribute name="idref" type="xs:IDREF" 
+			             use="required"/>
+			</xsd:complexType>
+		</xsd:element>
+		<xsd:element name="car">
+			<xsd:complexType>
+				<xsd:attribute name="idref" type="xs:IDREF" 
+			             use="required"/>
+			</xsd:complexType>
+		</xsd:element>
+	</xs:sequence>
+</xs:complexType>

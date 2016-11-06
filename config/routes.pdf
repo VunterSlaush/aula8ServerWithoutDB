@@ -1,0 +1,297 @@
+'use strict';
+
+/*
+ * Module dependencies.
+ */
+
+// Note: We can require users, articles and other cotrollers because we have
+// set the NODE_PATH to be ./app/controllers (package.json # scripts # start)
+
+const users = require('../app/controllers/users');
+const sections = require('../app/controllers/Section');
+const sessions = require('../app/controllers/Session');
+const subjects = require('../app/controllers/Subject');
+const subjectusers = require('../app/controllers/SubjectUser');
+const question = require('../app/controllers/Question');
+const auth = require('./middlewares/authorization');
+const port = process.env.PORT || 3000;
+
+const mongoose = require('mongoose');
+const Session = mongoose.model('Session');
+const Subject = mongoose.model('Subject');
+
+var mkdirp = require('mkdirp');
+var fs = require('fs');
+const path = require('path');
+
+var numUsuarios = 0;
+var ROOMS = {};
+var CLIENTS = {};
+
+for (var i = 0; i < 3; i++)
+{
+  ROOMS["room"+i] = "room" + i;
+}
+ROOMS["room"+3] = "room" + 3;
+
+/**
+ * Expose routes
+ */
+
+module.exports = function (app, passport) 
+{
+
+  // user routes
+  const io = require('socket.io').listen(app.listen(port));
+  app.post('/create/user', users.create);
+  app.post('/create/section', sections.create);
+  app.post('/create/session', sessions.create);
+  app.post('/create/subject', subjects.create);
+  app.post('/create/subjectuser', subjectusers.create);
+  app.post('/auth/login', users.login);
+  app.post('/users/subjects', users.Subjects);
+  
+  app.post('/', function(req, res){ res.send({success: "Ok"})});
+  app.get('/private', auth.ensureAuthenticated);
+  //app.get('/users/subject', users.subject);
+  app.get('/users/:username', users.findUser)
+  app.get('/sessions/:subject', sessions.findSessionBySubject);
+
+
+  //Agregue ESTO #Mota 
+  app.get('/:file(*)', function(req, res, next)
+  {
+    var file = req.params.file
+    , path = file;
+
+    res.download(path);
+  });
+
+  //Agregue ESTO TAMBIEN #Mota
+  app.post('/upload', function(req, res) 
+  {
+      console.log("\n\nBinary Upload Request from: " + req.ip);
+
+      var filename = req.headers["file-name"];
+      console.log("Started binary upload of: " + filename);
+          
+      mkdirp(req.headers["file-folder"], function (err) 
+      {
+          if (err) 
+          {
+              console.log("Error ..");
+          }    
+          else 
+          {   
+              var filepath = path.resolve(req.headers["file-folder"], filename);
+              var out = fs.createWriteStream(filepath, { flags: 'w', encoding: 'binary', fd: null, mode: '644' });
+              req.pipe(out);
+              req.on('end', function() 
+              {
+                  console.log("Finished binary upload of: " + filename + "\n  in: " + filepath);
+                  res.sendStatus(200);
+              });
+          } 
+      });
+  });
+
+
+  console.log('Express app started on port ' + port);
+
+
+  io.on('connection', function(socket) {  
+      console.log('Un cliente se ha conectado');
+
+    socket.on('credentials', function(data) {  
+        console.log(data);
+    });
+
+    var usuarioAñadido = false;
+
+    socket.on('room', function (room)
+      {
+        if(String(room.split("\"")[1]) === "undefined")
+        {
+          console.log("user conectado en la sala ", room );
+          socket.room = room;
+        }else{
+          console.log("user conectado en la sala ", room.split("\"")[1] );
+          socket.room = room.split("\"")[1];
+        }
+        socket.join (room);
+      }
+
+    );
+
+    socket.on('send_audio', function(data)
+    {
+        socket.in(socket.room).emit('get_audio', data);
+        console.log('recibiendo audio');
+    });
+
+    socket.on('nuevo mensaje', function (data) {
+      console.log("nuevo mensaje de ", socket.username, data, "en la sala ", socket.room);
+      socket.in(socket.room).to(socket.room).emit('nuevo mensaje', {
+        nombre_Usuario: socket.username,
+        mensaje: data
+      });
+    });
+
+
+    socket.on('agregar usuario', function (nombre_Usuario) {
+      if (usuarioAñadido) return;
+
+
+      socket.username = nombre_Usuario;
+      ++numUsuarios;
+      usuarioAñadido = true;
+      socket.emit('iniciar sesion', {
+        numUsuarios: numUsuarios
+      });
+
+      socket.in(socket.room).to(socket.room).emit('usuario unido', {
+        nombre_Usuario: socket.username,
+        numUsuarios: numUsuarios
+      });
+
+      console.log('Alguien se conectó con Aula 8', socket.request.connection._peername);
+    });
+
+
+    socket.on('escribiendo', function ()
+    {
+      socket.in(socket.room).to(socket.room).emit('escribiendo', {
+        nombre_Usuario: socket.username
+      });
+    });
+
+
+    socket.on('no escribiendo', function () {
+      socket.in(socket.room).to(socket.room).emit('no escribiendo', {
+        nombre_Usuario: socket.username
+      });
+    });
+
+    socket.on('enviar imagen', function (data) {
+      socket.in(socket.room).to(socket.room).emit('enviar imagen', {
+        nombre_Usuario: socket.username,
+        img_Codificada: data
+      });
+    });
+
+    socket.on("pintar", function(data)
+    {
+        socket.in(socket.room).emit("pintar",data);
+        console.log(data);
+    });
+
+    socket.on("borrar todo", function()
+    {
+        socket.in(socket.room).emit("borrar todo");
+        console.log("Borrar todo");
+    });
+
+
+    socket.on('disconnect', function () {
+      if (usuarioAñadido) {
+        --numUsuarios;
+
+        console.log('Alguien se desconectó de Aula 8', socket.request.connection._peername);
+
+        socket.in(socket.room).to(socket.room).emit('usuario desconectado', {
+          nombre_Usuario: socket.username,
+          numUsuarios: numUsuarios
+        });
+      }
+    });
+
+    socket.on('getSessions', function (data) {
+          Subject.findOne({name: data}, function(error, subject){
+              Session.findOne({subject: subject.id}, function(err, session){
+                  if(!session)
+                  {
+                    res.statusCode = 404;
+                    socket.emit("setSessions", {error: 'Not found'});
+                  }
+                  if(session){
+                    console.log("Session Enviada");
+                    socket.emit("setSessions", {session: session});
+                  }else
+                  {
+                    res.statusCode = 500
+                    console.log('Internal error(%d): %s',res.statusCode,err.message);
+                    socket.emit("setSessions", {error: 'Server error'});
+                  }
+              }); 
+          });
+    });
+
+
+
+    socket.on("descargar pdf", function (data) 
+    {
+        socket.in(socket.room).emit("descargar pdf",data);
+        console.log("Replicando PDF");        
+    });
+
+    socket.on("pag_sig", function () 
+    {
+        socket.in(socket.room).emit("pag_sig");
+        console.log("Pagina Siguiente");
+    });
+    
+    socket.on("pag_prev", function () 
+    {
+        socket.in(socket.room).emit("pag_prev");
+        console.log("Pagina Anterior");
+    });
+    
+    socket.on("zoom_in", function () 
+    {
+        socket.in(socket.room).emit("zoom_in");
+        console.log("Zoom++");
+    });
+
+    socket.on("zoom_out", function () 
+    {
+        socket.in(socket.room).emit("zoom_out");
+        console.log("Zoom--");
+    });
+
+
+    socket.on("rotar", function () 
+    {
+        socket.in(socket.room).emit("rotar");
+        console.log("rotar!");
+    });
+
+    socket.on("enviar archivo", function(data)
+    {
+        base64_decode(data.data,data.nombre,data.direccion);
+    });
+
+
+
+  });
+};
+
+function base64_decode(file,name,direccion) 
+{
+    // create buffer object from base64 encoded string, it is important to tell the constructor that the string is base64 encoded
+    
+    mkdirp(direccion, function (err) 
+    {
+        if (err) 
+        {
+            console.log("NWBNA DE ERROR ..");
+        }    
+        else 
+        {   
+            var bitmap = new Buffer(file, 'base64');
+            fs.writeFileSync(direccion+name.trim(), bitmap);
+        } 
+    });
+
+    //
+    console.log('******** File created from base64 encoded string ********');
+}
